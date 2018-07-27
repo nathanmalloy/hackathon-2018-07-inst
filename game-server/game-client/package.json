@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "matter-js": "^0.14.2",
+    "phaser": "^3.11.0"
+  }
+}

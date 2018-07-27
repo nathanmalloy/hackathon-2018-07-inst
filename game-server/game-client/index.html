@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../core.js"></script>
+  </head>
+  <body>
+    <div id="pre-game">
+      <div>
+        Name: <input id="name-value" value="" autofocus />
+      </div>
+      <div>
+        Carbonated beverage flavor: Lime
+      </div>
+      <button onclick="joinGame()">Join</button>
+    </div>
+    <div id="joining">Joining...</div>
+    <div id="joined-game">
+      <div>Waiting for players...</div>
+      <div><span id="player-count"></span> <span>players joined so far</span></div>
+      <button onclick="gameStarted()">Start Game</button>
+    </div>
+    <div id="errorMsg"></div>
+    <script>
+      var socket = io()
+      var game
+      var playerId
+      var startingPlayers
+      // send custom events with socket.emit('event name', data)
+      // respond to events with socket.on('event name', (msg) => {})
+
+      document.getElementById('joining').hidden = true
+      document.getElementById('joined-game').hidden = true
+
+      function joinGame() {
+        document.getElementById('pre-game').hidden = true
+        document.getElementById('joining').hidden = false
+
+        socket.emit('join', {
+          name: document.getElementById('name-value').value || 'Panda ' + playerId[0]
+        })
+
+        socket.on('joined', data => {
+          document.getElementById('joining').hidden = true
+          document.getElementById('joined-game').hidden = false
+          document.getElementById('player-count').innerHTML = data.playerCount
+        })
+
+        socket.on('player-joined', data => {
+          document.getElementById('player-count').innerHTML = data.playerCount
+        })
+
+        socket.on('started', data => {
+          document.getElementById('joined-game').hidden = true
+
+          startingPlayers = data.players
+
+          game = new Phaser.Game(config);
+        })
+      }
+
+      function gameStarted() {
+        document.getElementById('joined-game').hidden = true
+        socket.emit('start')
+      }
+
+      socket.on('onconnected', data => {
+        playerId = data.id
+        console.log(`Connected to server. ID: ${playerId}`)
+      })
+
+      socket.on('rejected', data => {
+        console.error(data.reason)
+        document.getElementById("errorMsg").innerHTML = `Error: ${data.reason}`
+      })
+    </script>
+    <script src="./game.js"></script>
+
+</body>
+</html>

@@ -11,7 +11,6 @@ const server = http.Server(app)
 const io = sio(server)
 // const Engine = matter.Engine
 
-const hostname = '127.0.0.1'
 const port = process.env.PORT || 3000
 
 const maxPlayers = 8
@@ -123,8 +122,8 @@ app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'game-client', file))
 })
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`)
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`)
 })
 
 function getPlayerData() {

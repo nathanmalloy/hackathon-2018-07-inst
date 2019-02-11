@@ -75,14 +75,11 @@ function create ()
 
   socket.on('update', data => {
     data.players.forEach(p => {
-      let user
       if (player && p.id === player.id) {
-        user = player
+        syncPlayer(player, p)
       } else {
-        user = opponents[p.id]
+        syncPlayer(opponents[p.id], p)
       }
-
-      syncPlayer(user, p)
     })
   })
 }
@@ -98,26 +95,36 @@ function update (time, delta) {
   }
 }
 
+let lastXInput = 0
+let lastThrustInput = false
 function handleInput() {
+  let xInput
   if (cursors.left.isDown) {
-    socket.emit('move-left', {
-      player: playerId,
-    })
-    player.moveLeft()
+    xInput = -1
   } else if (cursors.right.isDown) {
-    socket.emit('move-right', {
-      player: playerId,
-    })
-    player.moveRight()
+    xInput = 1
   } else {
-    // player.moveStill()
+    xInput = 0
   }
 
-  if (cursors.up.isDown || spacebar.isDown) {
-    socket.emit('thrust', {
-      player: playerId
+  if (xInput !== lastXInput) {
+    lastXInput = xInput
+    socket.emit('move-x', {
+      player: playerId,
+      x: xInput
     })
-    player.thrusting()
+    player.moveX(xInput)
+  }
+
+  thrustInput = cursors.up.isDown || spacebar.isDown
+
+  if (thrustInput !== lastThrustInput) {
+    lastThrustInput = thrustInput
+    socket.emit('thrust', {
+      player: playerId,
+      thrusting: thrustInput
+    })
+    player.thrusting(thrustInput)
   }
 }
 

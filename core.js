@@ -11,6 +11,7 @@
   const balloonSize = 16 * 1.5
 
   const gravity = 0.00012
+  const epsilon = 0.000001
   const playerMaxVelocity = { x: 0.2, y: 0.15 }
   const playerMaxRiseSpeed = 0.2
   const playerAccelX = playerMaxVelocity.x * 0.0008
@@ -107,25 +108,23 @@
         width: hitbox.width,
         height: balloonSize,
       }},
-      moveLeft() {
+      moveX(input) {
         if (this.isAlive) {
-          this.acceleration.x = -playerAccelX
-          this.isFacingRight = false
+          const clampedInput = clamp(input, -1, 1)
+
+          this.acceleration.x = clampedInput * playerAccelX
+
+          if (clampedInput > epsilon) {
+            this.isFacingRight = true
+          } else if (clampedInput < -epsilon) {
+            this.isFacingRight = false
+          }
         }
       },
-      moveRight() {
+      thrusting(thrustInput) {
         if (this.isAlive) {
-          this.acceleration.x = playerAccelX
-          this.isFacingRight = true
-        }
-      },
-      moveStill() {
-        this.acceleration.x = 0
-      },
-      thrusting() {
-        if (this.isAlive) {
-          this.acceleration.y = thrust
-          this.isThrusting = true
+          this.acceleration.y = thrustInput ? thrust : 0
+          this.isThrusting = thrustInput
         }
       },
       setPosition(x, y) {
@@ -135,7 +134,7 @@
       setVelocity(x, y) {
         this.velocity.x = x
         this.velocity.y = y
-        if (Math.abs(x) < 0.001) {
+        if (Math.abs(x) < epsilon) {
           this.velocity.x = 0
         }
       },
@@ -161,14 +160,14 @@
       }
 
       const acceleration = { x: p.acceleration.x, y: p.acceleration.y + engine.world.gravity }
-      if (p.velocity.x > 0.001) {
+      if (p.velocity.x > epsilon) {
         acceleration.x -= airDrag.x < p.velocity.x / delta ? airDrag.x : 0
-      } else if (p.velocity.x < 0.001) {
+      } else if (p.velocity.x < -epsilon) {
         acceleration.x += airDrag.x < -p.velocity.x / delta ? airDrag.x : 0
       }
       const velocityX = clamp(p.velocity.x + acceleration.x * delta, -playerMaxVelocity.x, playerMaxVelocity.x)
       const velocityY = clamp(p.velocity.y + acceleration.y * delta, -playerMaxRiseSpeed, playerMaxVelocity.y)
-      p.setAcceleration(0, 0)
+
       p.setVelocity(velocityX, velocityY)
       p.setPosition(p.position.x + p.velocity.x * delta, p.position.y + p.velocity.y * delta)
     })

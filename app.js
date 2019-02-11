@@ -46,21 +46,15 @@ io.on('connection', client => {
       client
     })
 
-    client.on('move-left', data => {
+    client.on('move-x', data => {
       if (gameInProgress) {
-        player.moveLeft()
-      }
-    })
-
-    client.on('move-right', data => {
-      if (gameInProgress) {
-        player.moveRight()
+        player.moveX(data.x)
       }
     })
 
     client.on('thrust', data => {
       if (gameInProgress) {
-        player.thrusting()
+        player.thrusting(data.thrusting)
       }
     })
 
@@ -100,7 +94,7 @@ io.on('connection', client => {
       const currentTime = new Date()
       core.update((currentTime - lastFrame))
       lastFrame = currentTime
-    }, 1000 / 60)
+    }, 1000 / 50)
 
     const syncInterval = setInterval(() => {
       io.emit('update', {

@@ -30,8 +30,6 @@ function preload ()
 
 function create ()
 {
-  // socket = io()
-
   core.initWorld()
 
   this.add.image(0, 0, 'sky')
@@ -48,22 +46,12 @@ function create ()
   cursors = this.input.keyboard.createCursorKeys()
   spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Spacebar)
   
-  // socket.on('onconnected', data => {
-  //   playerId = data.id
-  //   console.log(`Connected to server. ID: ${playerId}`)
-    player = createPlayer.bind(this)(playerId, startingPlayers.find(p => p.id === playerId))
+  player = createPlayer.bind(this)(playerId, startingPlayers.find(p => p.id === playerId))
 
-    startingPlayers.filter(p => p.id !== playerId).forEach((p) => {
-      const opponent = createPlayer.bind(this)(p.id, p)
-      opponents[p.id] = opponent
-    })
-  // })
-
-  // socket.on('player-joined', (data) => {
-  //   console.log('player joined!', data.id)
-  //   const opponent = createPlayer.bind(this)(data.id)
-  //   opponents[data.id] = opponent
-  // })
+  startingPlayers.filter(p => p.id !== playerId).forEach((p) => {
+    const opponent = createPlayer.bind(this)(p.id, p)
+    opponents[p.id] = opponent
+  })
   
   socket.on('player-left', data => {
     console.log('player left!', data.id)
@@ -73,14 +61,20 @@ function create ()
     opponents[data.id] = null
   })
 
+  let lastUpdateTime = 0
   socket.on('update', data => {
-    data.players.forEach(p => {
-      if (player && p.id === player.id) {
-        syncPlayer(player, p)
-      } else {
-        syncPlayer(opponents[p.id], p)
-      }
-    })
+    const timestamp = new Date(data.timestamp)
+    if (lastUpdateTime < timestamp) {
+      lastUpdateTime = timestamp
+
+      data.players.forEach(p => {
+        if (player && p.id === player.id) {
+          syncPlayer(player, p)
+        } else {
+          syncPlayer(opponents[p.id], p)
+        }
+      })
+    }
   })
 }
 
@@ -111,7 +105,8 @@ function handleInput() {
     lastXInput = xInput
     socket.emit('move-x', {
       player: playerId,
-      x: xInput
+      x: xInput,
+      timestamp: new Date() // what if server and client are on different times?
     })
     player.moveX(xInput)
   }
@@ -122,7 +117,8 @@ function handleInput() {
     lastThrustInput = thrustInput
     socket.emit('thrust', {
       player: playerId,
-      thrusting: thrustInput
+      thrusting: thrustInput,
+      timestamp: new Date()
     })
     player.thrusting(thrustInput)
   }

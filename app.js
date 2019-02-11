@@ -46,15 +46,28 @@ io.on('connection', client => {
       client
     })
 
+    let lastMoveXMessageTime = 0 // don't use DateTime.now in case server and client clocks are different
     client.on('move-x', data => {
       if (gameInProgress) {
-        player.moveX(data.x)
+        // ignore older messages if they arrive out of order
+        const timestamp = new Date(data.timestamp)
+        if (lastMoveXMessageTime < timestamp) {
+          lastMoveXMessageTime = timestamp
+
+          player.moveX(data.x)
+        }
       }
     })
 
+    let lastThrustMessageTime = 0
     client.on('thrust', data => {
       if (gameInProgress) {
-        player.thrusting(data.thrusting)
+        const timestamp = new Date(data.timestamp)
+        if (lastThrustMessageTime < timestamp) {
+          lastThrustMessageTime = timestamp
+
+          player.thrusting(data.thrusting)
+        }
       }
     })
 
@@ -98,7 +111,8 @@ io.on('connection', client => {
 
     const syncInterval = setInterval(() => {
       io.emit('update', {
-        players: getPlayerData()
+        players: getPlayerData(),
+        timestamp: new Date()
       })
     }, 1000 / 20)
 

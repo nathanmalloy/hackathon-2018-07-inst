@@ -3,13 +3,11 @@ const http = require('http')
 const sio = require('socket.io')
 const path = require('path')
 const uuid = require('node-uuid')
-// const matter = require('matter-js')
 const core = require('./core')
 
 const app = express()
 const server = http.Server(app)
 const io = sio(server)
-// const Engine = matter.Engine
 
 const port = process.env.PORT || 3000
 
@@ -68,7 +66,7 @@ io.on('connection', client => {
 
     client.emit('joined', { playerCount: players.length })
     client.broadcast.emit('player-joined', { id: client.userid, playerCount: players.length })
-    console.log(` socket.io:: player connected: ${client.userid}`)
+    console.log(` socket.io:: player connected: ${name} (${client.userid})`)
   })
 
 
@@ -82,22 +80,29 @@ io.on('connection', client => {
       const player = players.splice(playerIndex, 1)
       core.removePlayer(player)
 
-      console.log(` socket.io:: player disconnected: ${client.userid}`)
+      console.log(` socket.io:: player disconnected: ${name} (${client.userid})`)
 
       client.broadcast.emit('player-left', { id: client.userid })
+
+      if (players.length === 0) {
+        gameInProgress = false
+        clearInterval(physicsInterval)
+        clearInterval(syncInterval)
+        console.log('Game stopped because all players disconnected')
+      }
     })
 
     gameInProgress = true
 
     core.initWorld()
     let lastFrame = new Date()
-    setInterval(() => {  
+    const physicsInterval = setInterval(() => {  
       const currentTime = new Date()
       core.update((currentTime - lastFrame))
       lastFrame = currentTime
     }, 1000 / 60)
 
-    setInterval(() => {
+    const syncInterval = setInterval(() => {
       io.emit('update', {
         players: getPlayerData()
       })

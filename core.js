@@ -1,8 +1,4 @@
-(function(exports, Matter) {
-  // const Bodies = Matter.Bodies
-  // const Engine = Matter.Engine
-  // const Events = Matter.Events
-  // const World = Matter.World
+(function(exports) {
 
   let engine
 
@@ -21,7 +17,6 @@
   const thrust = -0.0004
   const bounce = 0.8
   const airDrag = { x: 0.0001 }
-  // const groundFriction = { x: 0.1 }
 
   exports.width = width
   exports.height = height

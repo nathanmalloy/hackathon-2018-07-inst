@@ -69,9 +69,9 @@ function create ()
 
       data.players.forEach(p => {
         if (player && p.id === player.id) {
-          syncPlayer(player, p)
+          syncPlayer(player, p, isLocalPlayer = true)
         } else {
-          syncPlayer(opponents[p.id], p)
+          syncPlayer(opponents[p.id], p, isLocalPlayer = false)
         }
       })
     }
@@ -124,15 +124,18 @@ function handleInput() {
   }
 }
 
-function syncPlayer(player, data) {
+function syncPlayer(player, data, isLocalPlayer) {
   player.name = data.name
   player.setPosition(data.position.x, data.position.y)
   player.setVelocity(data.velocity.x, data.velocity.y)
   player.isAlive = data.isAlive
-  player.isFacingRight = data.isFacingRight
   player.isThrusting = data.isThrusting
   player.balloons = data.balloons
-  syncSprite(player)
+
+  if (!isLocalPlayer) {
+    player.isFacingRight = data.isFacingRight
+    syncSprite(player)
+  }
 }
 
 function syncSprite(player) {

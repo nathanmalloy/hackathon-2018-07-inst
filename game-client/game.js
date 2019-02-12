@@ -87,6 +87,9 @@ function update (time, delta) {
   if (player) {
     syncSprite(player)
   }
+  Object.keys(opponents).forEach(o => {
+    syncSprite(opponents[o])
+  })
 }
 
 let lastXInput = 0

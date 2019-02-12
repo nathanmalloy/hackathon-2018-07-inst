@@ -54,7 +54,7 @@ function create ()
   })
   
   socket.on('player-left', data => {
-    console.log('player left!', data.id)
+    console.log('player left!', data.name)
     opponents[data.id].balloonSprites.forEach(b => b.destroy())
     opponents[data.id].nameTag.destroy()
     opponents[data.id].sprite.destroy()

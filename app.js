@@ -76,40 +76,23 @@ io.on('connection', client => {
     console.log(` socket.io:: player connected: ${name} (${client.userid})`)
   })
 
-
+  let physicsInterval, syncInterval
   client.on('start', data => {
     if (gameInProgress) {
       return
     }
 
-    client.on('disconnect', () => {
-      const playerIndex = players.indexOf(client)
-      const player = players.splice(playerIndex, 1)
-      core.removePlayer(player)
-
-      console.log(` socket.io:: player disconnected: ${name} (${client.userid})`)
-
-      client.broadcast.emit('player-left', { id: client.userid })
-
-      if (players.length === 0) {
-        gameInProgress = false
-        clearInterval(physicsInterval)
-        clearInterval(syncInterval)
-        console.log('Game stopped because all players disconnected')
-      }
-    })
-
     gameInProgress = true
 
     core.initWorld()
     let lastFrame = new Date()
-    const physicsInterval = setInterval(() => {  
+    physicsInterval = setInterval(() => {  
       const currentTime = new Date()
       core.update((currentTime - lastFrame))
       lastFrame = currentTime
     }, 1000 / 50)
 
-    const syncInterval = setInterval(() => {
+    syncInterval = setInterval(() => {
       io.emit('update', {
         players: getPlayerData(),
         timestamp: new Date()
@@ -117,6 +100,24 @@ io.on('connection', client => {
     }, 1000 / 20)
 
     io.emit('started', { players: getPlayerData() })
+  })
+
+  client.once('disconnect', () => {
+    const playerIndex = players.findIndex(player => player.id === client.userid)
+    console.log(playerIndex, 'player index')
+    const player = players.splice(playerIndex, 1)
+    core.removePlayer(player)
+
+    console.log(` socket.io:: player disconnected: ${name} (${client.userid})`)
+
+    io.emit('player-left', { id: client.userid, name: client.name })
+
+    if (players.length === 0) {
+      gameInProgress = false
+      clearInterval(physicsInterval)
+      clearInterval(syncInterval)
+      console.log('Game stopped because all players disconnected')
+    }
   })
 })
 

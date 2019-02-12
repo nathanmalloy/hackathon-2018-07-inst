@@ -121,18 +121,20 @@ io.on('connection', client => {
 })
 
 app.get('/', (req, res) => {
-  console.log('sending...')
   res.sendFile(path.join(__dirname, 'game-client', 'index.html'))
 })
 
 app.get('/core.js', (req, res) => {
-  console.log('sending...')
   res.sendFile(path.join(__dirname, 'core.js'))
 })
 
-app.get('/*', (req, res) => {
+app.get('/game.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'game-client', 'game.js'))
+})
+
+app.get('/assets/*', (req, res) => {
   const file = req.params[0]
-  res.sendFile(path.join(__dirname, 'game-client', file))
+  res.sendFile(path.join(__dirname, 'game-client', 'assets', file))
 })
 
 server.listen(port, () => {

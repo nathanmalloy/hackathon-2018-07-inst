@@ -30,6 +30,10 @@
       width: width,
       height: boundaryThickness
     }
+    const underfloor = {
+      ...floor,
+      y: floor.y + height * 0.5
+    }
     const wallL = {
       x: 0,
       y: height / 2,
@@ -52,6 +56,7 @@
     engine = {
       world: {
         floor,
+        underfloor,
         wallL,
         wallR,
         ceiling,
@@ -174,7 +179,7 @@
 
     players.forEach(p => {
       let overlap
-      if (overlap = isColliding(p.hitbox, engine.world.floor)) {
+      if (overlap = isColliding(p.hitbox, p.isAlive ? engine.world.floor : engine.world.underfloor)) {
         p.position.y -= overlap.y
         p.velocity.y = 0
       }
@@ -256,6 +261,14 @@
       })
     })
     previousCollisions = frameCollisions
+  }
+
+  exports.getWinnerName = () => {
+    const livingPlayers = players.filter(p => p.isAlive)
+    if (livingPlayers.length === 1) {
+      const winner = livingPlayers[0]
+      return winner.name
+    }
   }
 
   function isColliding(a, b) {

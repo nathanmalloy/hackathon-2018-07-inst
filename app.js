@@ -16,7 +16,6 @@ const players = []
 let gameInProgress = false
 
 io.on('connection', client => {
-  let name
   client.userid = uuid()
   client.emit('onconnected', { id: client.userid, playerCount: players.length })
 
@@ -26,8 +25,6 @@ io.on('connection', client => {
   })
 
   client.on('join', data => {
-    name = data.name
-
     if (players.length >= maxPlayers) {
       console.log('rejected player because max reached')
       client.emit('rejected', { reason: 'max players reached' })
@@ -40,7 +37,7 @@ io.on('connection', client => {
       return
     }
 
-    const player = core.createPlayer(client.userid, name)
+    const player = core.createPlayer(client.userid, data.name)
     players.push({
       ...player,
       client
@@ -73,7 +70,7 @@ io.on('connection', client => {
 
     client.emit('joined', { playerCount: players.length })
     client.broadcast.emit('player-joined', { id: client.userid, playerCount: players.length })
-    console.log(` socket.io:: player connected: ${name} (${client.userid})`)
+    console.log(` socket.io:: player connected: ${player.name} (${client.userid})`)
   })
 
   let physicsInterval, syncInterval
@@ -103,14 +100,14 @@ io.on('connection', client => {
   })
 
   client.once('disconnect', () => {
-    const playerIndex = players.findIndex(player => player.id === client.userid)
-    console.log(playerIndex, 'player index')
-    const player = players.splice(playerIndex, 1)
+    const player = players.find(player => player.id === client.userid)
+    const playerIndex = players.indexOf(player)
+    players.splice(playerIndex, 1)
+
+    console.log(` socket.io:: player disconnected: ${player.name} (${client.userid})`)
+    io.emit('player-left', { id: client.userid, name: player.name })
+
     core.removePlayer(player)
-
-    console.log(` socket.io:: player disconnected: ${name} (${client.userid})`)
-
-    io.emit('player-left', { id: client.userid, name: client.name })
 
     if (players.length === 0) {
       gameInProgress = false

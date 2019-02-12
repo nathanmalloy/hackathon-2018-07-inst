@@ -88,8 +88,15 @@ function update (time, delta) {
     syncSprite(player)
   }
   Object.keys(opponents).forEach(o => {
-    syncSprite(opponents[o])
+    if (opponents[o]) {
+      syncSprite(opponents[o])
+    }
   })
+
+  const winner = core.getWinnerName()
+  if (winner) {
+    showWinnerText.bind(this)(winner)
+  }
 }
 
 let lastXInput = 0
@@ -168,7 +175,7 @@ function syncSprite(player) {
 }
 
 function createPlayer(id, data) {
-  const player = core.createPlayer(id)
+  const player = core.createPlayer(id, data.name)
 
   const sprite = this.add.image(player.position.x, player.position.y, 'panda', 0)
   // sprite.displayOriginX = 0
@@ -209,4 +216,9 @@ function createPlayer(id, data) {
     balloonSprites,
     nameTag
   }
+}
+
+function showWinnerText(winnerName) {
+  const winnerText = this.add.text(core.width / 2, core.height / 2, `${winnerName}\nWins!`, { align: 'center', fontSize: 48 })
+  winnerText.setOrigin(0.5, 0.5)
 }

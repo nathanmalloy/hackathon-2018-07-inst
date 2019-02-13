@@ -271,6 +271,10 @@
     }
   }
 
+  exports.reset = () => {
+    players.length = 0
+  }
+
   function isColliding(a, b) {
     if (Math.abs(a.x - b.x) > (a.width + b.width) / 2) {
       return false

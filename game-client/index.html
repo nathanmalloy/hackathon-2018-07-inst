@@ -30,6 +30,7 @@
       // send custom events with socket.emit('event name', data)
       // respond to events with socket.on('event name', (msg) => {})
 
+      document.getElementById('pre-game').hidden = false
       document.getElementById('joining').hidden = true
       document.getElementById('joined-game').hidden = true
 
@@ -48,6 +49,10 @@
         })
 
         socket.on('player-joined', data => {
+          document.getElementById('player-count').innerHTML = data.playerCount
+        })
+
+        socket.on('player-left', data => {
           document.getElementById('player-count').innerHTML = data.playerCount
         })
 

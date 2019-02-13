@@ -9,15 +9,10 @@ var config = {
   }
 };
 
-// var game = new Phaser.Game(config);
-
-// let socket
-
 let cursors
 let spacebar
 let ground
 let player
-// let playerId
 const opponents = {}
 const emitterOffset = { x: -0.25, y: 0.25 }
 
@@ -76,6 +71,14 @@ function create ()
       })
     }
   })
+
+  socket.on('game-over', data => {
+    showWinnerText.bind(this)(data.winner)
+
+    setTimeout(() => {
+      window.location.reload()
+    }, 5000)
+  })
 }
 
 function update (time, delta) {
@@ -92,11 +95,6 @@ function update (time, delta) {
       syncSprite(opponents[o])
     }
   })
-
-  const winner = core.getWinnerName()
-  if (winner) {
-    showWinnerText.bind(this)(winner)
-  }
 }
 
 let lastXInput = 0

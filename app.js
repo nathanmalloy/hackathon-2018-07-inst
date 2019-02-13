@@ -19,10 +19,14 @@ io.on('connection', client => {
   client.userid = uuid()
   client.emit('onconnected', { id: client.userid, playerCount: players.length })
 
-  client.on('end', data => {
+  function end() {
     gameInProgress = false
     players.length = 0
-  })
+    core.reset()
+    clearInterval(physicsInterval)
+    clearInterval(syncInterval)
+    client.removeAllListeners()
+  }
 
   client.on('join', data => {
     if (players.length >= maxPlayers) {
@@ -87,6 +91,12 @@ io.on('connection', client => {
       const currentTime = new Date()
       core.update((currentTime - lastFrame))
       lastFrame = currentTime
+
+      const winner = core.getWinnerName()
+      if (winner) {
+        io.emit('game-over', { winner })
+        setTimeout(end, 5000)
+      }
     }, 1000 / 50)
 
     syncInterval = setInterval(() => {
@@ -101,19 +111,19 @@ io.on('connection', client => {
 
   client.once('disconnect', () => {
     const player = players.find(player => player.id === client.userid)
-    const playerIndex = players.indexOf(player)
-    players.splice(playerIndex, 1)
+    if (player) {
+      const playerIndex = players.indexOf(player)
+      players.splice(playerIndex, 1)
 
-    console.log(` socket.io:: player disconnected: ${player.name} (${client.userid})`)
-    io.emit('player-left', { id: client.userid, name: player.name })
+      console.log(` socket.io:: player disconnected: ${player.name} (${client.userid})`)
+      io.emit('player-left', { id: client.userid, name: player.name, playerCount: players.length })
 
-    core.removePlayer(player)
+      core.removePlayer(player)
 
-    if (players.length === 0) {
-      gameInProgress = false
-      clearInterval(physicsInterval)
-      clearInterval(syncInterval)
-      console.log('Game stopped because all players disconnected')
+      if (players.length === 0) {
+        end()
+        console.log('Game stopped because all players disconnected')
+      }
     }
   })
 })

@@ -14,6 +14,7 @@
         Carbonated beverage flavor: Lime
       </div>
       <button onclick="joinGame()">Join</button>
+      <button onclick="joinGame(asSpectator = true)">Spectate</button>
     </div>
     <div id="joining">Joining...</div>
     <div id="joined-game">
@@ -26,6 +27,7 @@
       var socket = io()
       var game
       var playerId
+      var isSpectator
       var startingPlayers
       // send custom events with socket.emit('event name', data)
       // respond to events with socket.on('event name', (msg) => {})
@@ -34,13 +36,18 @@
       document.getElementById('joining').hidden = true
       document.getElementById('joined-game').hidden = true
 
-      function joinGame() {
+      function joinGame(asSpectator) {
         document.getElementById('pre-game').hidden = true
         document.getElementById('joining').hidden = false
 
-        socket.emit('join', {
-          name: document.getElementById('name-value').value || 'Panda ' + playerId[0]
-        })
+        if (asSpectator) {
+          socket.emit('spectate')
+          isSpectator = true
+        } else {
+          socket.emit('join', {
+            name: document.getElementById('name-value').value
+          })
+        }
 
         socket.on('joined', data => {
           document.getElementById('joining').hidden = true

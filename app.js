@@ -41,7 +41,7 @@ io.on('connection', client => {
       return
     }
 
-    const player = core.createPlayer(client.userid, data.name)
+    const player = core.createPlayer(client.userid, data.name || 'Panda ' + client.userid[0])
     players.push({
       ...player,
       client
@@ -77,6 +77,17 @@ io.on('connection', client => {
     console.log(` socket.io:: player connected: ${player.name} (${client.userid})`)
   })
 
+  client.on('spectate', data => {
+    if (gameInProgress) {
+      console.log('rejected player because game in progress')
+      client.emit('rejected', { reason: 'game in progress' })
+      return
+    }
+
+    client.emit('joined', { playerCount: players.length })
+    console.log(` socket.io:: spectator connected: ${client.userid}`)
+  })
+
   let physicsInterval, syncInterval
   client.on('start', data => {
     if (gameInProgress) {
@@ -100,7 +111,7 @@ io.on('connection', client => {
     }, 1000 / 50)
 
     syncInterval = setInterval(() => {
-      io.emit('update', {
+      io.volatile.emit('update', {
         players: getPlayerData(),
         timestamp: new Date()
       })

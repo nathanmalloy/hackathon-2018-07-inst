@@ -41,7 +41,9 @@ function create ()
   cursors = this.input.keyboard.createCursorKeys()
   spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Spacebar)
   
-  player = createPlayer.bind(this)(playerId, startingPlayers.find(p => p.id === playerId))
+  if (!isSpectator) {
+    player = createPlayer.bind(this)(playerId, startingPlayers.find(p => p.id === playerId))
+  }
 
   startingPlayers.filter(p => p.id !== playerId).forEach((p) => {
     const opponent = createPlayer.bind(this)(p.id, p)

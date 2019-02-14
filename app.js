@@ -25,6 +25,7 @@ io.on('connection', client => {
     core.reset()
     clearInterval(physicsInterval)
     clearInterval(syncInterval)
+    clearInterval(gameOverInterval)
     client.removeAllListeners()
   }
 
@@ -88,7 +89,7 @@ io.on('connection', client => {
     console.log(` socket.io:: spectator connected: ${client.userid}`)
   })
 
-  let physicsInterval, syncInterval
+  let physicsInterval, syncInterval, gameOverInterval
   client.on('start', data => {
     if (gameInProgress) {
       return
@@ -104,9 +105,9 @@ io.on('connection', client => {
       lastFrame = currentTime
 
       const winner = core.getWinnerName()
-      if (winner) {
+      if (winner && !gameOverInterval) {
         io.emit('game-over', { winner })
-        setTimeout(end, 5000)
+        gameOverInterval = setTimeout(end, 5000)
       }
     }, 1000 / 50)
 
@@ -121,6 +122,8 @@ io.on('connection', client => {
   })
 
   client.once('disconnect', () => {
+    core.removePlayer(client.userid)
+
     const player = players.find(player => player.id === client.userid)
     if (player) {
       const playerIndex = players.indexOf(player)
@@ -128,8 +131,6 @@ io.on('connection', client => {
 
       console.log(` socket.io:: player disconnected: ${player.name} (${client.userid})`)
       io.emit('player-left', { id: client.userid, name: player.name, playerCount: players.length })
-
-      core.removePlayer(player)
 
       if (players.length === 0) {
         end()

@@ -52,9 +52,12 @@ function create ()
   
   socket.on('player-left', data => {
     console.log('player left!', data.name)
-    opponents[data.id].balloonSprites.forEach(b => b.destroy())
-    opponents[data.id].nameTag.destroy()
+    core.removePlayer(data.id)
     opponents[data.id].sprite.destroy()
+    opponents[data.id].particles.destroy()
+    opponents[data.id].balloonSprites.forEach(b => b.destroy())
+    opponents[data.id].fuelTank.destroy()
+    opponents[data.id].nameTag.destroy()
     opponents[data.id] = null
   })
 
@@ -226,6 +229,7 @@ function createPlayer(id, data) {
   return {
     ...player,
     sprite,
+    particles,
     emitter,
     balloonSprites,
     fuelTank,

@@ -155,9 +155,9 @@
     players.push(player)
     return player
   }
-  exports.removePlayer = (player) => {
-    const playerIndex = players.indexOf(player)
-    if (playerIndex > 0) {
+  exports.removePlayer = (playerId) => {
+    const playerIndex = players.findIndex(p => p.id === playerId)
+    if (playerIndex > -1) {
       players.splice(playerIndex, 1)
     }
   }

@@ -41,7 +41,7 @@ io.on('connection', client => {
       return
     }
 
-    const player = core.createPlayer(client.userid, data.name || 'Panda ' + client.userid[0])
+    const player = core.createPlayer(client.userid, data.name || 'Panda ' + client.userid[0], data.skinId || 0)
     players.push({
       ...player,
       client
@@ -166,10 +166,12 @@ function getPlayerData() {
     return {
       id: p.id,
       name: player.name,
+      skinId: player.skinId,
       isAlive: player.isAlive,
       isFacingRight: player.isFacingRight,
       isThrusting: player.isThrusting,
       balloons: player.balloons,
+      fuel: player.fuel,
       position: player.position,
       velocity: player.velocity,
     }

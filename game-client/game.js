@@ -19,7 +19,7 @@ const emitterOffset = { x: -0.25, y: 0.25 }
 function preload ()
 {
   this.load.image('sky', 'assets/sky.png');
-  this.load.spritesheet('panda', 'assets/panda-arm.png', { frameWidth: 32, frameHeight: 32 })
+  this.load.spritesheet('panda', 'assets/panda-empty.png', { frameWidth: 32, frameHeight: 32 })
   this.load.image('balloon', 'assets/balloon-highlight.png')
 }
 
@@ -141,6 +141,7 @@ function syncPlayer(player, data, isLocalPlayer) {
   player.isAlive = data.isAlive
   player.isThrusting = data.isThrusting
   player.balloons = data.balloons
+  player.fuel = data.fuel
 
   if (!isLocalPlayer) {
     player.isFacingRight = data.isFacingRight
@@ -171,11 +172,24 @@ function syncSprite(player) {
     }
   })
 
+  const fuelTankXOffset = scaleToPlayerSprite(6, player.width) * (player.isFacingRight ? 1 : -1)
+  player.fuelTank.setPosition(player.position.x - fuelTankXOffset, player.position.y + scaleToPlayerSprite(7, player.height))
+  player.fuelTank.scaleY = player.fuel
+
   player.nameTag.setPosition(player.position.x, player.position.y + player.height / 2)
 }
 
 function createPlayer(id, data) {
   const player = core.createPlayer(id, data.name)
+
+  const fuelTank = this.add.rectangle(
+    player.position.x - scaleToPlayerSprite(6, player.width),
+    player.position.y + scaleToPlayerSprite(7, player.height),
+    scaleToPlayerSprite(8, player.width),
+    scaleToPlayerSprite(10, player.height),
+    getFuelColor(data.skinId)
+  )
+  fuelTank.displayOriginY = scaleToPlayerSprite(10, player.height)
 
   const sprite = this.add.image(player.position.x, player.position.y, 'panda', 0)
   // sprite.displayOriginX = 0
@@ -214,8 +228,24 @@ function createPlayer(id, data) {
     sprite,
     emitter,
     balloonSprites,
+    fuelTank,
     nameTag
   }
+}
+
+function scaleToPlayerSprite(pixel, playerDimension) {
+  return Math.floor((pixel / 32) * playerDimension)
+}
+
+const skins = [
+  {
+    name: 'lime',
+    fuelColor: 0xD3FFD0
+  }
+]
+
+function getFuelColor(skinId) {
+  return skins[skinId].fuelColor
 }
 
 function showWinnerText(winnerName) {

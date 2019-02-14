@@ -16,6 +16,8 @@
   const playerMaxRiseSpeed = 0.2
   const playerAccelX = playerMaxVelocity.x * 0.0008
   const thrust = -0.0004
+  const fuelUsageRate = 0.2
+  const fuelRefillRate = 1.0
   const bounce = 0.8
   const airDrag = { x: 0.0001 }
 
@@ -72,7 +74,7 @@
       p.position.y = 400
     })
   }
-  exports.createPlayer = (id, name) => {
+  exports.createPlayer = (id, name, skinId) => {
     const startPos = { x: 100, y: 100 }
     const width = 32 * 2
     const height = 32 * 2
@@ -87,6 +89,7 @@
     const player = {
       id: id,
       name,
+      skinId,
       get hitbox() { return {
         ...hitbox,
         x: this.isFacingRight ? this.position.x + hitbox.x : this.position.x - hitbox.x,
@@ -101,6 +104,7 @@
       position: startPos,
       velocity: { x: 0, y: 0 },
       acceleration: { x: 0, y: 0 },
+      fuel: 0.5,
       balloons: 2,
       balloonSize,
       balloonOffsets: [
@@ -163,6 +167,13 @@
       if (p.acceleration.y > thrust) {
         p.isThrusting = false
       }
+      if (p.fuel === 0) {
+        p.acceleration.y = 0
+        p.isThrusting = false
+      }
+      if (p.isThrusting) {
+        p.fuel = clamp(p.fuel - fuelUsageRate * delta / 1000, 0, 1)
+      }
 
       const acceleration = { x: p.acceleration.x, y: p.acceleration.y + engine.world.gravity }
       if (p.velocity.x > epsilon) {
@@ -182,6 +193,8 @@
       if (overlap = isColliding(p.hitbox, p.isAlive ? engine.world.floor : engine.world.underfloor)) {
         p.position.y -= overlap.y
         p.velocity.y = 0
+
+        p.fuel = clamp(p.fuel + fuelRefillRate * delta / 1000, 0, 1)
       }
       if (overlap = isColliding(p.hitbox, engine.world.wallL)) {
         p.position.x += overlap.x

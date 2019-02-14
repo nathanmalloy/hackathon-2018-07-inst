@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.16.1/dist/phaser.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="../core.js"></script>
   </head>
@@ -45,7 +45,8 @@
           isSpectator = true
         } else {
           socket.emit('join', {
-            name: document.getElementById('name-value').value
+            name: document.getElementById('name-value').value,
+            skinId: 0
           })
         }
 

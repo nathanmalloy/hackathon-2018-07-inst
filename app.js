@@ -41,7 +41,7 @@ io.on('connection', client => {
       return
     }
 
-    const player = core.createPlayer(client.userid, data.name || 'Panda ' + client.userid[0], data.skinId || 0)
+    const player = core.createPlayer(client.userid, data.name || 'Panda ' + client.userid[0], data.skinId || 'pure')
     players.push({
       ...player,
       client

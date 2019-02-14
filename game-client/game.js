@@ -237,12 +237,14 @@ function scaleToPlayerSprite(pixel, playerDimension) {
   return Math.floor((pixel / 32) * playerDimension)
 }
 
-const skins = [
-  {
-    name: 'lime',
-    fuelColor: 0xD3FFD0
-  }
-]
+const skins = {
+  pure: { name: 'pure', fuelColor: 0xccf6ff },
+  lemon: { name: 'lemon', fuelColor: 0xf6ffcc },
+  lime: { name: 'lime', fuelColor: 0xccffd0 },
+  berry: { name: 'berry', fuelColor: 0xe9ccff },
+  orange: { name: 'orange', fuelColor: 0xfff2cc },
+  'cran-rasp': { name: 'cran-rasp', fuelColor: 0xffcce5 },
+}
 
 function getFuelColor(skinId) {
   return skins[skinId].fuelColor

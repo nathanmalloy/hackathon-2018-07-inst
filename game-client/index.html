@@ -11,7 +11,15 @@
         Name: <input id="name-value" value="" autofocus />
       </div>
       <div>
-        Carbonated beverage flavor: Lime
+        Carbonated beverage flavor: <select id="skin-selector" onchange="changeSkinPreview(event.target.value)">
+          <option value="pure">Pure</option>
+          <option value="lemon">Lemon</option>
+          <option value="lime">Lime</option>
+          <option value="berry">Berry</option>
+          <option value="orange">Orange</option>
+          <option value="cran-rasp">Cran-Raspberry</option>
+        </select>
+        <span id="skin-preview" style="display: inline-block; vertical-align: middle; border: thin solid black; margin-left: 0.5rem; width: 1rem; height: 1rem;"></span>
       </div>
       <button onclick="joinGame()">Join</button>
       <button onclick="joinGame(asSpectator = true)">Spectate</button>
@@ -36,6 +44,10 @@
       document.getElementById('joining').hidden = true
       document.getElementById('joined-game').hidden = true
 
+      function changeSkinPreview(skin) {
+        document.getElementById('skin-preview').style.backgroundColor = '#' + skins[skin].fuelColor.toString(16)
+      }
+
       function joinGame(asSpectator) {
         document.getElementById('pre-game').hidden = true
         document.getElementById('joining').hidden = false
@@ -46,7 +58,7 @@
         } else {
           socket.emit('join', {
             name: document.getElementById('name-value').value,
-            skinId: 0
+            skinId: document.getElementById('skin-selector').value
           })
         }
 
@@ -89,6 +101,9 @@
       })
     </script>
     <script src="./game.js"></script>
+    <script>
+      changeSkinPreview('pure')
+    </script>
 
 </body>
 </html>

@@ -133,7 +133,7 @@
       thrusting(thrustInput) {
         if (this.isAlive) {
           this.acceleration.y = thrustInput ? thrust : 0
-          this.isThrusting = thrustInput
+          this.isThrusting = thrustInput && this.fuel > 0
         }
       },
       setPosition(x, y) {
@@ -269,7 +269,6 @@
             p.velocity.y *= -bounce
             p2.velocity.y *= -bounce
           }
-          console.log('harmless bounce')
         }
       })
     })

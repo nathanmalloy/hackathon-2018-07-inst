@@ -117,7 +117,6 @@ function handleInput() {
   if (xInput !== lastXInput) {
     lastXInput = xInput
     socket.emit('move-x', {
-      player: playerId,
       x: xInput,
       timestamp: new Date() // what if server and client are on different times?
     })
@@ -129,7 +128,6 @@ function handleInput() {
   if (thrustInput !== lastThrustInput) {
     lastThrustInput = thrustInput
     socket.emit('thrust', {
-      player: playerId,
       thrusting: thrustInput,
       timestamp: new Date()
     })

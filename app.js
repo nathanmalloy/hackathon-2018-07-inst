@@ -157,6 +157,14 @@ app.get('/assets/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'game-client', 'assets', file))
 })
 
+app.get('/bot', (req, res) => {
+  res.sendFile(path.join(__dirname, 'game-client', 'bot.html'))
+})
+
+app.get('/bot.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'game-client', 'bot.js'))
+})
+
 server.listen(port, () => {
   console.log(`Server running on port ${port}`)
 })

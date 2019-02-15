@@ -13,6 +13,7 @@ let cursors
 let spacebar
 let ground
 let player
+let amIAlive = true
 const opponents = {}
 const emitterOffset = { x: -0.25, y: 0.25 }
 
@@ -70,6 +71,12 @@ function create ()
       data.players.forEach(p => {
         if (player && p.id === player.id) {
           syncPlayer(player, p, isLocalPlayer = true)
+
+          if (amIAlive && !p.isAlive) {
+            const rank = 1 + data.players.filter(pp => pp.isAlive).length
+            showRankText.bind(this)(rank)
+            amIAlive = false
+          }
         } else {
           syncPlayer(opponents[p.id], p, isLocalPlayer = false)
         }
@@ -78,7 +85,10 @@ function create ()
   })
 
   socket.on('game-over', data => {
-    showWinnerText.bind(this)(data.winner)
+    if (!player) {
+      // show name of victor for spectators
+      showWinnerText.bind(this)(data.winner)
+    }
 
     setTimeout(() => {
       window.location.reload()
@@ -148,6 +158,18 @@ function syncPlayer(player, data, isLocalPlayer) {
     player.isFacingRight = data.isFacingRight
     syncSprite(player)
   }
+}
+
+function ordinal(rank) {
+  // for 1 or 2 digits
+  if (rank === 11 || rank === 12 || rank === 13) {
+    return `${rank}th`
+  }
+  const n = rank % 10
+  if (n === 1) return `${rank}st`
+  if (n === 2) return `${rank}nd`
+  if (n === 3) return `${rank}rd`
+  return `${rank}th`
 }
 
 function syncSprite(player) {
@@ -255,4 +277,9 @@ function getFuelColor(skinId) {
 function showWinnerText(winnerName) {
   const winnerText = this.add.text(core.width / 2, core.height / 2, `${winnerName}\nWins!`, { align: 'center', fontSize: 48 })
   winnerText.setOrigin(0.5, 0.5)
+}
+
+function showRankText(rank) {
+  const rankText = this.add.text(core.width / 2, core.height / 2, `You placed ${ordinal(rank)}`, { align: 'center', fontSize: 48 })
+  rankText.setOrigin(0.5, 0.5)
 }

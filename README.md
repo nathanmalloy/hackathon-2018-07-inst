@@ -3,8 +3,18 @@
 
 Didn't have time to finish:
 * Send binary instead of JSON
-* Interpolate updates from the server to smooth position adjustments
-* Save server updates from a couple frames ago to handle latency
+
+UPDATE: second week of hackathon!
+
+* Smoothed movement when server is remote
+* Spectating
+* Sample bot implementation
+* Display winner/rank at the end of the match
+* Limited amount of fuel. Refuel while on the ground
+* "Skins" for your jetpack
+* Fixed disconnecting 
+* Game shuts down when nobody is connected
+* Code quality still not prioritized
 
 ## Usage
 
@@ -18,9 +28,10 @@ Didn't have time to finish:
 * Select a name and carbonated beverage flavor
 * Click Join
 * Open additional tabs/windows to add more players
+* * Open `/bot` in a browser to have the included bot join the game. Close the page to have the bot leave the game.
 * Click Start Game on any client
 
-## Controls
+### Controls
 
 Arrow Keys:
 

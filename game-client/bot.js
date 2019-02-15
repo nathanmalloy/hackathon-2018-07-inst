@@ -47,38 +47,106 @@ socket.on('started', data => {
     const delta = time - lastCoreUpdate
     lastCoreUpdate = time
 
-    makeDecisions()
-    // core.update(time, delta)
+    if (findSelf().isAlive) {
+      makeDecisions()
+      // core.update(time, delta)
+    } else {
+      // :(
+      clearInterval(coreUpdateLoop)
+    }
   }, 1000 / 60)
 })
 
+function findSelf() {
+  return core.players.find(p => p.id === playerId)
+}
+
+function distanceFromSelf(self, opponent) {
+  return Math.abs(self.position.x - opponent.position.x)
+}
+
+function distanceYFromSelf(self, opponent) {
+  return Math.abs(self.position.y - opponent.position.y)
+}
+
+let lastMoveInput = 0
 function makeDecisions() {
   // world boundaries are in core.engine.world
   // players (including yourself) are in core.players
 
-  const self = core.players.find(p => p.id === playerId)
+  const self = findSelf()
+  const opponents = core.players.filter(p => p.id !== playerId && p.isAlive)
+  if (!opponents.length) return
+
+  const nearestOpponentX = opponents.sort((a, b) => distanceFromSelf(self, a) - distanceFromSelf(self, b))[0]
+  // opponents are now sorted by x distance
   const isGrounded = self.position.y + self.height >= core.engine.world.floor.y
 
-  const option = Math.random()
-  if (option < 0.01) {
-    socket.emit('move-x', { x: 0, timestamp: new Date() })
-  } else if (option < 0.015) {
-    socket.emit('move-x', { x: -1, timestamp: new Date() })
-  } else if (option < 0.020) {
-    socket.emit('move-x', { x: 1, timestamp: new Date() })
+  if (isGrounded) {
+    refuelOnGroundThenTakeOff(self)
+    return
   }
 
-  if (isGrounded) {
-    if (self.fuel === 1 && !self.isThrusting) {
-      socket.emit('thrust', { thrusting: true, timestamp: new Date() })
-    } else if (!self.isThrusting) {
-      socket.emit('thrust', { thrusting: false, timestamp: new Date() })
-    }
+  if (nearestOpponentX.position.y < self.position.y - self.height / 2 || Math.random() < 0.05) {
+    avoid(self, nearestOpponentX)
   } else {
-    if (option < 0.03) {
-      socket.emit('thrust', { thrusting: false, timestamp: new Date() })
-    } else if (option < 0.1 && !isGrounded) {
-      socket.emit('thrust', { thrusting: true, timestamp: new Date() })
+    // if same height, thrust to get into stomping height
+    thrust(distanceYFromSelf(self, nearestOpponentX) < self.height / 2)
+    moveTowardNearestOpponent(self, nearestOpponentX)
+  }
+}
+
+function moveLeft() {
+  move(-1)
+}
+
+function moveRight() {
+  move(1)
+}
+
+function dontMove() {
+  move(0)
+}
+
+function move(direction) {
+  if (lastMoveInput !== direction) {
+    socket.emit('move-x', { x: direction, timestamp: new Date() })
+    lastMoveInput = direction
+  }
+}
+
+function thrust(up) {
+  socket.emit('thrust', { thrusting: up, timestamp: new Date() })
+}
+
+function moveTowardNearestOpponent(self, nearestOpponentX) {
+  if (nearestOpponentX.position.x > self.position.x + self.width / 2) {
+    moveRight()
+  } else if (nearestOpponentX.position.x < self.position.x - self.width / 2) {
+    moveLeft()
+  } else {
+    dontMove()
+  }
+}
+
+function avoid(self, nearestOpponentX) {
+  if (distanceFromSelf(self, nearestOpponentX) < self.width) {
+    if (nearestOpponentX.position.x > self.position.x) {
+      moveLeft()
+    } else {
+      moveRight()
     }
+  }
+}
+
+
+function refuelOnGroundThenTakeOff(self) {
+  // assume isGrounded
+  // fudge the fuel amount slightly to avoid stalemates with other bots (and be less predictable)
+  const desiredFuel = 0.75 + Math.random() / 4
+  if (self.fuel >= desiredFuel && !self.isThrusting) {
+    thrust(true)
+  } else if (!self.isThrusting) {
+    thrust(false)
   }
 }

@@ -18,7 +18,8 @@
   const thrust = -0.0004
   const fuelUsageRate = 0.2
   const fuelRefillRate = 1.0
-  const bounce = 0.8
+  const bounce = 0.95
+  const wallBounce = 0.8
   const airDrag = { x: 0.0001 }
 
   exports.width = width
@@ -198,15 +199,15 @@
       }
       if (overlap = isColliding(p.hitbox, engine.world.wallL)) {
         p.position.x += overlap.x
-        p.velocity.x *= -bounce
+        p.velocity.x *= -wallBounce
       }
       if (overlap = isColliding(p.hitbox, engine.world.wallR)) {
         p.position.x -= overlap.x
-        p.velocity.x *= -bounce
+        p.velocity.x *= -wallBounce
       }
       if (overlap = isColliding(p.hitbox, engine.world.ceiling)) {
         p.position.y += overlap.y
-        p.velocity.y *= -bounce
+        p.velocity.y *= -wallBounce
       }
     })
 
@@ -250,6 +251,8 @@
           p2.balloons -= 1
           if (p2.balloons === 0) {
             p2.isAlive = false
+            p2.isThrusting = false
+            p2.setAcceleration(0, 0)
           }
         } 
         else if (overlap = isColliding(p.hitbox, p2.hitbox)) {

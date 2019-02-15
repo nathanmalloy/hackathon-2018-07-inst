@@ -104,7 +104,7 @@ Join a game if it has not started yet. You will get a `joined` event on success 
 
 Args:
 name: your name, will be displayed next to your character during the game
-skinId: string name of your skin. Defaults to 'pure' if you don't specify anything.
+skinId: string name of your skin. Defaults to 'pure' if you don't specify anything. Possible values are `pure`, `lemon`, `lime`, `berry`, `orange`, `cran-rasp`.
 
 #### `spectate`
 
